@@ -4,7 +4,6 @@ using Confluent.Kafka.SyncOverAsync;
 using Confluent.SchemaRegistry;
 using Confluent.SchemaRegistry.Serdes;
 using Google.Protobuf;
-using GoogleTimestamp = Google.Protobuf.WellKnownTypes.Timestamp;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -12,6 +11,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
+// TODO: Uncomment alias
+// using GoogleTimestamp = Google.Protobuf.WellKnownTypes.Timestamp;
 
 namespace TransferTest
 {
@@ -43,9 +45,10 @@ namespace TransferTest
             Console.WriteLine($"\nDefault topic: {consumerOptions.TopicsList[0]}");
             var consumerTopics = new List<string> { consumerOptions.TopicsList[0] };
 
-            await Run_Consumer<Protos.Sink.v1.Key, Protos.Source.v1.person>(brokerOptions.Brokers, consumerTopics, producerOptions.Topic,
-                brokerOptions.SecurityProtocol, brokerOptions.SaslMechanism, brokerOptions.SaslUsername, brokerOptions.SaslPassword,
-                brokerOptions.SchemaRegistryUrl, brokerOptions.SchemaRegistryAuth ,cts.Token);
+            // TODO: Uncomment after creating .proto files in ProtoLibrary/Protos
+            // await Run_Consumer<Protos.Sink.v1.Key, Protos.Source.v1.person>(brokerOptions.Brokers, consumerTopics, producerOptions.Topic,
+            //     brokerOptions.SecurityProtocol, brokerOptions.SaslMechanism, brokerOptions.SaslUsername, brokerOptions.SaslPassword,
+            //     brokerOptions.SchemaRegistryUrl, brokerOptions.SchemaRegistryAuth ,cts.Token);
         }
 
         public static async Task Run_Consumer<TKey, TValue>(string brokerList, List<string> consumerTopics, string producerTopic,
@@ -63,10 +66,6 @@ namespace TransferTest
                 SessionTimeoutMs = 6000,
                 AutoOffsetReset = AutoOffsetReset.Earliest,
                 EnablePartitionEof = true,
-                // SecurityProtocol = securityProtocol,
-                // SaslMechanism = saslMechanism,
-                // SaslUsername = saslUsername,
-                // SaslPassword = saslPassword
             };
 
             const int commitPeriod = 5;
@@ -82,7 +81,6 @@ namespace TransferTest
                     Console.WriteLine($"Revoking assignment: [{string.Join(", ", partitions)}]");
                 })
                 // Set value Protobuf deserializer
-                // .SetKeyDeserializer(new ProtobufDeserializer<TKey>().AsSyncOverAsync())
                 .SetValueDeserializer(new ProtobufDeserializer<TValue>().AsSyncOverAsync())
                 .Build())
             {
@@ -145,16 +143,10 @@ namespace TransferTest
             var config = new ProducerConfig
             {
                 BootstrapServers = brokerList,
-                // SecurityProtocol = securityProtocol,
-                // SaslMechanism = saslMechanism,
-                // SaslUsername = saslUsername,
-                // SaslPassword = saslPassword
             };
             var schemaRegistryConfig = new SchemaRegistryConfig
             {
                 Url = schemaRegistryUrl,
-                // BasicAuthCredentialsSource = AuthCredentialsSource.UserInfo,
-                // BasicAuthUserInfo = basicAuthUserInfo
             };
 
             using (var schemaRegistry = new CachedSchemaRegistryClient(schemaRegistryConfig))
@@ -165,9 +157,6 @@ namespace TransferTest
             {
                 try
                 {
-                    // Note: Awaiting the asynchronous produce request below prevents flow of execution
-                    // from proceeding until the acknowledgement from the broker is received (at the 
-                    // expense of low throughput).
                     var deliveryReport = await producer.ProduceAsync(topicName, message);
 
                     Console.WriteLine($"delivered to: {deliveryReport.TopicPartitionOffset} for producer: {producer.Name}");
@@ -176,14 +165,9 @@ namespace TransferTest
                 {
                     Console.WriteLine($"failed to deliver message: {e.Message} [{e.Error.Code}]");
                 }
-
-                // Since we are producing synchronously, at this point there will be no messages
-                // in-flight and no delivery reports waiting to be acknowledged, so there is no
-                // need to call producer.Flush before disposing the producer.
             }
         }
         private static void PrintConsumeResult<TKey, TValue>(ConsumeResult<TKey, TValue> consumeResult)
-            // where TKey : class, new()
             where TValue : class, new()
         {
             long key = 0;
@@ -192,22 +176,19 @@ namespace TransferTest
             var last_name = string.Empty;
             var favColor = string.Empty;
             int age = 0;
-            GoogleTimestamp ts = new GoogleTimestamp();
-            if (consumeResult.Message.Value is Protos.Source.v1.person val1)
-            {
-                id = val1.PersonId;
-                first_name = val1.FirstName;
-                last_name = val1.LastName;
-                favColor = val1.FavoriteColor;
-                age = val1.Age;
-                ts = val1.RowVersion;
-            }
-            // if (consumeResult.Message.Key is Source.Key key1)
+            // TODO: Uncomment after creating .proto files in ProtoLibrary/Protos
+            // GoogleTimestamp ts = new GoogleTimestamp();
+            // if (consumeResult.Message.Value is Protos.Source.v1.person val1)
             // {
-            //     key = key1.PersonId;
+            //     id = val1.PersonId;
+            //     first_name = val1.FirstName;
+            //     last_name = val1.LastName;
+            //     favColor = val1.FavoriteColor;
+            //     age = val1.Age;
+            //     ts = val1.RowVersion;
             // }
-            Console.WriteLine($"Received message at {consumeResult.TopicPartitionOffset}: Key: {key}, " +
-                $"Id: {id}, Name: {first_name} {last_name}, Fav Color: {favColor}, Age: {age} RowVersion: {ts}");
+            // Console.WriteLine($"Received message at {consumeResult.TopicPartitionOffset}: Key: {key}, " +
+            //     $"Id: {id}, Name: {first_name} {last_name}, Fav Color: {favColor}, Age: {age} RowVersion: {ts}");
         }
 
         static Message<TKey, TValue> CreateMessage<TKey, TValue>(TValue value)
@@ -215,13 +196,14 @@ namespace TransferTest
             where TValue : class, IMessage<TValue>, new()
         {
             var key = new TKey();
-            if (value is Protos.Source.v1.person val1)
-            {
-                if (key is Protos.Sink.v1.Key key1)
-                {
-                    key1.PersonId = val1.PersonId;
-                }
-            }
+            // TODO: Uncomment after creating .proto files in ProtoLibrary/Protos
+            // if (value is Protos.Source.v1.person val1)
+            // {
+            //     if (key is Protos.Sink.v1.Key key1)
+            //     {
+            //         key1.PersonId = val1.PersonId;
+            //     }
+            // }
             var message = new Message<TKey, TValue>
             {
                 Key = key,

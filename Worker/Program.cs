@@ -6,13 +6,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
-using Worker.Handlers;
 
-// Aliases
-using SourcePerson = Protos.Source.v1.person;
-using SinkKey = Protos.Sink.v1.Key;
-using SinkPerson = Protos.Sink.v1.person;
-using Result = Confluent.Kafka.DeliveryResult<Protos.Sink.v1.Key, Protos.Sink.v1.person>;
+// TODO: Uncomment aliases after creating .proto files in ProtoLibrary/Protos
+// using SourcePerson = Protos.Source.v1.person;
+// using SinkKey = Protos.Sink.v1.Key;
+// using SinkPerson = Protos.Sink.v1.person;
+// using Result = Confluent.Kafka.DeliveryResult<Protos.Sink.v1.Key, Protos.Sink.v1.person>;
 
 namespace Worker
 {
@@ -52,24 +51,7 @@ namespace Worker
                         return logger;
                     });
 
-                    // Add event processor
-                    services.AddSingleton<IEventProcessorWithResult<Result>>(sp =>
-                    {
-                        // Get logger
-                        var logger = sp.GetRequiredService<ILogger>();
-
-                        // Create consumer, producer
-                        var kafkaConsumer = KafkaUtils.CreateConsumer<SourcePerson>(
-                            brokerOptions, consumerOptions.TopicsList, logger);
-                        var kafkaProducer = KafkaUtils.CreateProducer<SinkKey, SinkPerson>(
-                            brokerOptions, logger);
-
-                        // Return event processor using async producer
-                        return new KafkaEventProcessorWithResult<Ignore, SourcePerson, SinkKey, SinkPerson>(
-                            new KafkaEventConsumer<Ignore, SourcePerson>(kafkaConsumer, logger),
-                            new KafkaEventProducerAsync<SinkKey, SinkPerson>(kafkaProducer, producerOptions.Topic),
-                            new TransformHandler(logger));
-                    });
+                    // TODO: Add event processor
 
                     // Add worker
                     services.AddHostedService<KafkaWorker>();

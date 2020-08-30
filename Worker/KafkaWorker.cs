@@ -5,32 +5,31 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-// Alias
-using Result = Confluent.Kafka.DeliveryResult<Protos.Sink.v1.Key, Protos.Sink.v1.person>;
+// TODO: Uncomment alias
+// using Result = Confluent.Kafka.DeliveryResult<Protos.Sink.v1.Key, Protos.Sink.v1.person>;
 
 namespace Worker
 {
     public class KafkaWorker : BackgroundService
     {
-        private readonly IEventProcessorWithResult<Result> eventProcessor;
-        private readonly ILogger logger;
+        // TODO: Uncomment after creating .proto files in ProtoLibrary/Protos
+        // private readonly IEventProcessorWithResult<Result> eventProcessor;
+        // private readonly ILogger logger;
 
-        public KafkaWorker(IEventProcessorWithResult<Result> eventProcessor, ILogger logger)
-        {
-            this.eventProcessor = eventProcessor;
-            this.logger = logger;
-        }
+        // public KafkaWorker(IEventProcessorWithResult<Result> eventProcessor, ILogger logger)
+        // {
+        //     this.eventProcessor = eventProcessor;
+        //     this.logger = logger;
+        // }
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                logger.LogInformation($"Worker processing event at: {DateTimeOffset.Now}");
+                // TODO: Uncomment after uncommenting fields and constructor
+                // logger.LogInformation($"Worker processing event at: {DateTimeOffset.Now}");
 
-                // Process event
-                var deliveryResult = await eventProcessor.ProcessWithResult(cancellationToken);
-                if (deliveryResult != null)
-                    logger.LogInformation($"delivered to: {deliveryResult.TopicPartitionOffset}");
+                // TODO: Process event stream and record delivery result
             }
         }
     }
